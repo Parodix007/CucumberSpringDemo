@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: cucumber-spring-demo
+
+api:
+  base:
+    url: https://dummyjson.com/
+  auth:
+    context:
+      path: auth/
+    login: login
+    me: me
+  user:
+    context:
+      path: users/
+  recipes:
+    context:
+      path: recipes/
+  posts:
+    context:
+      path: posts/
+  comments:
+    context:
+      path: comments/
