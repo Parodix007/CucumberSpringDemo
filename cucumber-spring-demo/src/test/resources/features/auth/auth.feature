@@ -1,9 +1,6 @@
 Feature: Authorization using JWT
   I want to know whether authorization complains business requirements
 
-  Background:
-
-
   Scenario Outline: Are my credentials correct?
     Given Create a user data using "<username>" and "<password>"
     When Make a request for JWT
@@ -28,7 +25,7 @@ Feature: Authorization using JWT
 
   Scenario Outline: Can I get my correct data with JWT?
     Given Create a user data using "<username>" and "<password>"
-    When Make a request for JWT
+    When Make a request for JWT and user metadata
     Then Response should contains "<username>" and "<password>" and "<id>"
 
     Examples:
