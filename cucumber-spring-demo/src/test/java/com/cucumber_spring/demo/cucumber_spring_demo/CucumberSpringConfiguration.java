@@ -1,4 +1,4 @@
-package com.cucumber_spring.demo.cucumber_spring_demo.features.auth;
+package com.cucumber_spring.demo.cucumber_spring_demo;
 
 import com.cucumber_spring.demo.cucumber_spring_demo.config.CommonsConfig;
 import io.cucumber.spring.CucumberContextConfiguration;

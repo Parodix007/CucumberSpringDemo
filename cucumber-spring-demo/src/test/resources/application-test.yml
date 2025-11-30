@@ -10,9 +10,6 @@ api:
       path: auth/
     login: login
     me: me
-  user:
-    context:
-      path: users/
   recipes:
     context:
       path: recipes/

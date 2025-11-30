@@ -59,9 +59,9 @@ public class AuthFeature extends Feature {
             .statusCode();
   }
 
-  @Then("Response should be {string}")
-  public void responseShouldBe(final String expectedStatusCode) {
-    assertEquals(Integer.valueOf(expectedStatusCode), responseStatusCode);
+  @Then("Response should be {int}")
+  public void responseShouldBe(final int expectedStatusCode) {
+    assertEquals(expectedStatusCode, responseStatusCode);
   }
 
   @When("Make a request for JWT and user metadata")

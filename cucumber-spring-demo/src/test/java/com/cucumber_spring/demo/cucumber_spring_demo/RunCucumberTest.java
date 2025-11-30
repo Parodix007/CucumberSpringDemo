@@ -20,6 +20,6 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
             + "junit:target/cucumber-reports/cucumber-junit.xml")
 @ConfigurationParameter(
         key = GLUE_PROPERTY_NAME,
-        value = "com.cucumber_spring.demo.cucumber_spring_demo.features.auth"
+        value = "com.cucumber_spring.demo.cucumber_spring_demo"
 )
 public class RunCucumberTest {}
