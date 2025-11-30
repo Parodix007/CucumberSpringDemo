@@ -2,9 +2,9 @@ name: BDD Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main]
 
 jobs:
   test:
@@ -21,4 +21,4 @@ jobs:
           java-version: '21'
           
       - name: Run Cucumber tests
-        run: cd cucumber-spring-demo && mvn clean test -U
+        run: cd cucumber-spring-demo && mvn clean test -U -C
