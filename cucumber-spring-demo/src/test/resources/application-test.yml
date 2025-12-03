@@ -13,6 +13,7 @@ api:
   recipes:
     context:
       path: recipes/
+    add: add
   posts:
     context:
       path: posts/

@@ -7,11 +7,11 @@ Feature: CRUD operations on recipes API
       | emilys   | emilyspass |
 
   Scenario Outline: Creating a recipe
-    Given Create a new recipe model with
+    And Create a new recipe with
       | name          | tags                 | mealType            | reviewCount |
       | <recipe_name> | [Eggs, Bread, Bacon] | [Breakfast, Supper] | 5           |
       | <recipe_name> | [Potatoes, Cheese]   | [Dinner]            | 5           |
-    When Make a request with the recipe model
+    When Make a request with the new recipe
     Then Response should be "<response_code>"
 
     Examples:
@@ -38,9 +38,9 @@ Feature: CRUD operations on recipes API
     Then Response should be "<response_code>"
 
     Examples:
-      | id | response_code |
-      | 1  | 200           |
-      | 2  | 200           |
+      | id | response_code | recipe_name |
+      | 1  | 200           | Hard-boiled eggs |
+      | 2  | 200           | Potato gratin    |
 
   Scenario: Delete a recipe
     When Make a delete request for recipe 1
