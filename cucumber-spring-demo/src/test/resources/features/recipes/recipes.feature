@@ -6,18 +6,18 @@ Feature: CRUD operations on recipes API
       | username | password   |
       | emilys   | emilyspass |
 
-  Scenario Outline: Creating a recipe
+  Scenario: Creating a recipe
     And Create a new recipe with
-      | name          | tags                 | mealType            | reviewCount |
-      | <recipe_name> | [Eggs, Bread, Bacon] | [Breakfast, Supper] | 5           |
-      | <recipe_name> | [Potatoes, Cheese]   | [Dinner]            | 5           |
+    """json
+      {
+        "name": "Scramble eggs",
+        "tags": ["Eggs", "Bread", "Bacon"],
+        "mealType": ["Breakfast", "Supper"],
+        "reviewCount": 5
+      }
+    """
     When Make a request with the new recipe
-    Then Response should be "<response_code>"
-
-    Examples:
-      | recipe_name   | response_code |
-      | Scramble eggs | 200           |
-      | Dumplings     | 200           |
+    Then Response should be 200
 
   Scenario Outline: Reading a recipe
     Given Get a recipe id "<id>"
@@ -31,14 +31,20 @@ Feature: CRUD operations on recipes API
 
   Scenario Outline: Updating a recipe
     Given Create a new recipe model with
-      | name          | tags                 | mealType            | reviewCount |
-      | <recipe_name> | [Eggs, Bread, Bacon] | [Breakfast, Supper] | 5           |
-      | <recipe_name> | [Potatoes, Cheese]   | [Dinner]            | 5           |
+      """json
+      {
+        "name": "<recipe_name>",
+        "tags": ["Eggs", "Bread", "Bacon"],
+        "mealType": ["Breakfast", "Supper"],
+        "reviewCount": 5
+      }
+    """
     When Make a update request withe the recipe model for "<id>"
-    Then Response should be "<response_code>"
+    Then Response should has new name "<recipe_name>"
+    And Response should be "<response_code>"
 
     Examples:
-      | id | response_code | recipe_name |
+      | id | response_code | recipe_name      |
       | 1  | 200           | Hard-boiled eggs |
       | 2  | 200           | Potato gratin    |
 

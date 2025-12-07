@@ -1,8 +1,8 @@
 package com.cucumber_spring.demo.cucumber_spring_demo.features.auth;
 
-import com.cucumber_spring.demo.cucumber_spring_demo.auth.AuthService;
+import com.cucumber_spring.demo.cucumber_spring_demo.auth.AuthStateService;
+import com.cucumber_spring.demo.cucumber_spring_demo.config.model.ResponseCodeState;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.Feature;
-import com.cucumber_spring.demo.cucumber_spring_demo.auth.model.AuthUserDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +11,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -23,18 +24,21 @@ public class AuthFeature extends Feature {
   private static final String PASSWORD_FIELD = "password";
   private static final String ID_FIELD = "id";
   private final String meUrl;
+  private final AuthStateService authService;
+  private final ResponseCodeState responseCodeState;
   private JsonNode userMetadata;
-  private AuthService authService;
 
   public AuthFeature(
       @Value("${api.base.url}") final String apiBaseUri,
       @Value("${api.auth.context.path}") final String apiBaseContextPath,
       @Value("${api.auth.me}") final String meUrl,
       final ObjectMapper objectMapper,
-      final AuthService authService) {
+      final AuthStateService authService,
+      final ResponseCodeState responseCodeState) {
     super(apiBaseUri, apiBaseContextPath, objectMapper, ContentType.JSON);
     this.meUrl = meUrl;
     this.authService = authService;
+    this.responseCodeState = responseCodeState;
   }
 
   @Given("Create a user data using {string} and {string}")
@@ -45,11 +49,12 @@ public class AuthFeature extends Feature {
   @When("Make a request for JWT")
   public void makeARequestForJWT() {
     authService.makeARequestForJwt();
+    responseCodeState.setResponseCode(authService.getStatusCode());
   }
 
-  @When("Make a request for JWT and user metadata")
+  @When("Make a request for user metadata")
   public void makeARequestForJWTAndUserMetadata() throws JsonProcessingException {
-    final String userMetadataJson =
+    final ExtractableResponse<Response> userMetadataResponse =
         RestAssured.given()
             .spec(this.requestSpecBuilder.build())
             .auth()
@@ -57,14 +62,17 @@ public class AuthFeature extends Feature {
             .when()
             .get(meUrl)
             .then()
-            .extract()
-            .asPrettyString();
+            .extract();
+
+    final String userMetadataJson = userMetadataResponse.asPrettyString();
 
     log.info("User metadata as string {}", userMetadataJson);
 
     userMetadata = objectMapper.readTree(userMetadataJson);
 
     log.info("user metadata as Json node {}", userMetadata);
+
+    responseCodeState.setResponseCode(userMetadataResponse.statusCode());
   }
 
   @Then("Response should contains {string} and {string} and {string}")

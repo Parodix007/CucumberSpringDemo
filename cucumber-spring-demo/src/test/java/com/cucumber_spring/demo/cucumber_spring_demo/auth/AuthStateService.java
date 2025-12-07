@@ -11,14 +11,14 @@ import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AuthService {
+public class AuthStateService {
   private final RequestSpecification requestSpecification;
   private final String loginUrl;
   private AuthUserDto authUserDto;
   private AuthUserResDto authUserResDto;
   private int statusCode;
 
-  AuthService(final String baseUrl, final String contextPath, final String loginUrl) {
+  AuthStateService(final String baseUrl, final String contextPath, final String loginUrl) {
     final RequestSpecBuilder requestSpecBuilder = new RequestSpecBuilder();
     requestSpecBuilder.setBaseUri(baseUrl);
     requestSpecBuilder.setBasePath(contextPath);
