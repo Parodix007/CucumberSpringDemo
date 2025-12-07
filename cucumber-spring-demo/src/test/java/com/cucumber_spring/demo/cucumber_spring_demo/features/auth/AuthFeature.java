@@ -1,7 +1,8 @@
 package com.cucumber_spring.demo.cucumber_spring_demo.features.auth;
 
+import com.cucumber_spring.demo.cucumber_spring_demo.auth.AuthStateService;
+import com.cucumber_spring.demo.cucumber_spring_demo.config.model.ResponseCodeState;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.Feature;
-import com.cucumber_spring.demo.cucumber_spring_demo.features.model.AuthUserDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +11,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import io.restassured.specification.RequestSpecification;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -21,85 +23,56 @@ public class AuthFeature extends Feature {
   private static final String USERNAME_FIELD = "username";
   private static final String PASSWORD_FIELD = "password";
   private static final String ID_FIELD = "id";
-  private static final String ACCESS_TOKEN_FIELD = "accessToken";
-  private final String loginUrl;
   private final String meUrl;
-  private AuthUserDto authUserDto;
-  private int responseStatusCode;
+  private final AuthStateService authService;
+  private final ResponseCodeState responseCodeState;
   private JsonNode userMetadata;
 
   public AuthFeature(
       @Value("${api.base.url}") final String apiBaseUri,
       @Value("${api.auth.context.path}") final String apiBaseContextPath,
-      @Value("${api.auth.login}") final String loginUrl,
       @Value("${api.auth.me}") final String meUrl,
-      final ObjectMapper objectMapper) {
+      final ObjectMapper objectMapper,
+      final AuthStateService authService,
+      final ResponseCodeState responseCodeState) {
     super(apiBaseUri, apiBaseContextPath, objectMapper, ContentType.JSON);
-    this.loginUrl = loginUrl;
     this.meUrl = meUrl;
+    this.authService = authService;
+    this.responseCodeState = responseCodeState;
   }
 
   @Given("Create a user data using {string} and {string}")
   public void createAUserDataUsingAnd(final String username, final String password) {
-    this.authUserDto = new AuthUserDto(username, password);
-    log.info("Created a user metadata {}", this.authUserDto);
+    authService.createDataForAuth(username, password);
   }
 
   @When("Make a request for JWT")
-  public void makeARequestForJWT() throws JsonProcessingException {
-    this.responseStatusCode =
-        RestAssured.given()
-            .spec(requestSpecBuilder.build())
-            .body(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(authUserDto))
-            .contentType(ContentType.JSON)
-            .when()
-            .post(loginUrl)
-            .then()
-            .extract()
-            .statusCode();
+  public void makeARequestForJWT() {
+    authService.makeARequestForJwt();
+    responseCodeState.setResponseCode(authService.getStatusCode());
   }
 
-  @Then("Response should be {string}")
-  public void responseShouldBe(final String expectedStatusCode) {
-    assertEquals(Integer.valueOf(expectedStatusCode), responseStatusCode);
-  }
-
-  @When("Make a request for JWT and user metadata")
+  @When("Make a request for user metadata")
   public void makeARequestForJWTAndUserMetadata() throws JsonProcessingException {
-    final RequestSpecification requestSpecification = requestSpecBuilder.build();
-    final String jwtResponseString =
+    final ExtractableResponse<Response> userMetadataResponse =
         RestAssured.given()
-            .spec(requestSpecification)
-            .body(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(authUserDto))
-            .contentType(ContentType.JSON)
-            .when()
-            .post(loginUrl)
-            .then()
-            .extract()
-            .asPrettyString();
-
-    log.info("JWT response string {}", jwtResponseString);
-
-    final JsonNode jwtResponseJsonNode = objectMapper.readTree(jwtResponseString);
-    log.info("JWT response as json node {}", jwtResponseJsonNode);
-
-    final String token = jwtResponseJsonNode.get(ACCESS_TOKEN_FIELD).asText();
-    final String userMetadataJson =
-        RestAssured.given()
-            .spec(requestSpecification)
+            .spec(this.requestSpecBuilder.build())
             .auth()
-            .oauth2(token)
+            .oauth2(authService.getUserJwt())
             .when()
             .get(meUrl)
             .then()
-            .extract()
-            .asPrettyString();
+            .extract();
+
+    final String userMetadataJson = userMetadataResponse.asPrettyString();
 
     log.info("User metadata as string {}", userMetadataJson);
 
     userMetadata = objectMapper.readTree(userMetadataJson);
 
     log.info("user metadata as Json node {}", userMetadata);
+
+    responseCodeState.setResponseCode(userMetadataResponse.statusCode());
   }
 
   @Then("Response should contains {string} and {string} and {string}")

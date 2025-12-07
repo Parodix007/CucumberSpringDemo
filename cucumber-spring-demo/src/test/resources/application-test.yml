@@ -10,15 +10,13 @@ api:
       path: auth/
     login: login
     me: me
-  user:
-    context:
-      path: users/
   recipes:
     context:
-      path: recipes/
+      path: ${api.auth.context.path}recipes/
+    add: add
   posts:
     context:
-      path: posts/
+      path: ${api.auth.context.path}posts/
   comments:
     context:
-      path: comments/
+      path: ${api.auth.context.path}comments/

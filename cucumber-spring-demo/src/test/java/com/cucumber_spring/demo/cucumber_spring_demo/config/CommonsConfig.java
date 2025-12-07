@@ -1,13 +1,21 @@
 package com.cucumber_spring.demo.cucumber_spring_demo.config;
 
+import com.cucumber_spring.demo.cucumber_spring_demo.config.model.ResponseCodeState;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.test.context.TestConfiguration;
+import io.cucumber.spring.ScenarioScope;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@TestConfiguration
+@Configuration
 public class CommonsConfig {
   @Bean
-  public ObjectMapper objectMapper() {
+  ObjectMapper objectMapper() {
     return new ObjectMapper();
+  }
+
+  @Bean
+  @ScenarioScope
+  ResponseCodeState responseCodeState() {
+    return new ResponseCodeState();
   }
 }
