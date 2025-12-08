@@ -4,11 +4,13 @@ import com.cucumber_spring.demo.cucumber_spring_demo.auth.AuthStateService;
 import com.cucumber_spring.demo.cucumber_spring_demo.auth.model.AuthUserDto;
 import com.cucumber_spring.demo.cucumber_spring_demo.config.model.ResponseCodeState;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.Feature;
+import com.cucumber_spring.demo.cucumber_spring_demo.features.recipes.model.RecipeDeleteResVo;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.recipes.model.RecipeDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.DataTableType;
 import io.cucumber.java.DocStringType;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class RecipesFeature extends Feature {
@@ -30,6 +33,7 @@ public class RecipesFeature extends Feature {
   private final ResponseCodeState responseCodeState;
   private RecipeDto recipeDto;
   private String recipeToGetId;
+  private RecipeDeleteResVo recipeDeleteResVo;
 
   private RecipesFeature(
       @Value("${api.base.url}") final String apiBaseUrl,
@@ -140,16 +144,26 @@ public class RecipesFeature extends Feature {
 
   @When("Make a delete request for recipe {int}")
   public void makeADeleteRequestForRecipe(final int id) {
-    final int deleteRecipeResponseStatusCode =
-        RestAssured.given()
+    final ExtractableResponse<Response> deleteRecipeResponse = RestAssured.given()
             .spec(this.requestSpecBuilder.build())
             .auth()
             .oauth2(authStateService.getUserJwt())
             .when()
             .delete(String.valueOf(id))
             .then()
-            .extract()
-            .statusCode();
+            .extract();
+    final int deleteRecipeResponseStatusCode = deleteRecipeResponse.statusCode();
+
     responseCodeState.setResponseCode(deleteRecipeResponseStatusCode);
+
+    this.recipeDeleteResVo = deleteRecipeResponse.as(RecipeDeleteResVo.class);
+
+    log.info("Delete for a recipe response {}", this.recipeDeleteResVo);
   }
+
+    @And("Response isDeleted should be true for id {int}")
+    public void responseIsDeletedShouldBeTrue(final int id) {
+      assertTrue(this.recipeDeleteResVo.isDeleted());
+      assertEquals(id, this.recipeDeleteResVo.getId());
+    }
 }

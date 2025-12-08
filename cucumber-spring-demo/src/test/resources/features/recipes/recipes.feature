@@ -51,3 +51,4 @@ Feature: CRUD operations on recipes API
   Scenario: Delete a recipe
     When Make a delete request for recipe 1
     Then Response should be 200
+    And Response isDeleted should be true for id 1
