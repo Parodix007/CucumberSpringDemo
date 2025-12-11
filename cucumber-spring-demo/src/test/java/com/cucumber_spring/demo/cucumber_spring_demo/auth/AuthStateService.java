@@ -65,6 +65,10 @@ public class AuthStateService {
     return this.authUserResDto.getAccessToken();
   }
 
+  public int getAuthUserId() {
+    return this.authUserResDto.getId();
+  }
+
   public int getStatusCode() {
     return statusCode;
   }

@@ -17,6 +17,8 @@ api:
   posts:
     context:
       path: ${api.auth.context.path}posts/
+    add: add
+    user: user
   comments:
     context:
       path: ${api.auth.context.path}comments/

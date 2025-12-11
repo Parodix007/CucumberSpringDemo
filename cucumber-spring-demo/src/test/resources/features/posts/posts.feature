@@ -7,10 +7,10 @@ Feature: CRUD Operations for posts API
       | emilys   | emilyspass |
 
   Scenario Outline: I want to get a post
-    Given Create a request data with "<id>"
-    When Make a request for a post
+    When Make a request for a post "<id>"
     Then Response should has "<id>" and "<title>"
     And Response should be "<response_code>"
+
     Examples:
       | id | title                            | response_code |
       | 1  | His mother had always taught him | 200           |
@@ -28,7 +28,7 @@ Feature: CRUD Operations for posts API
     }
     """
     When Make a request to create a post
-    Then Respones metadata should match created post
+    Then Response metadata should match created post
     And Response should be 201
 
   Scenario Outline: I want to update a post
@@ -44,20 +44,37 @@ Feature: CRUD Operations for posts API
     }
     """
     When Make a request to update a post "<id>"
-    Then Respones metadata should match updated post
+    Then Response metadata should match updated post
     And Response should be "<response_code>"
 
     Examples:
-    | id | response_code |
-    | 1  | 200           |
+      | id | response_code |
+      | 1  | 200           |
 
   Scenario Outline: I want to delete a post
     When Make a request to delete a post "<id>"
-    Then Response should be "<response_code>"
+    Then Response post should be deleted
+    And Response should be "<response_code>"
+
     Examples:
       | id | response_code |
       | 1  | 200           |
 
   Scenario Outline: I want to get all posts for specific users
+    When Make a request for user posts
+    Then Response should has total posts "<total_posts>"
+    And Response should be "<response_code>"
+
+    Examples:
+      | total_posts | response_code |
+      | 1           | 200           |
 
   Scenario Outline: I want to get posts with a pagination
+    When Make a request for posts with pagination "<limit>"
+    Then Response should has total posts "<limit>"
+    And Response should be "<response_code>"
+
+    Examples:
+      | limit | response_code |
+      | 1     | 200           |
+      | 10    | 200           |
