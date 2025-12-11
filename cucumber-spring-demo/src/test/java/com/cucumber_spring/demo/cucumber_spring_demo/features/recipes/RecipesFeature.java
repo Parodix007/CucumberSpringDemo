@@ -1,14 +1,12 @@
 package com.cucumber_spring.demo.cucumber_spring_demo.features.recipes;
 
 import com.cucumber_spring.demo.cucumber_spring_demo.auth.AuthStateService;
-import com.cucumber_spring.demo.cucumber_spring_demo.auth.model.AuthUserDto;
 import com.cucumber_spring.demo.cucumber_spring_demo.config.model.ResponseCodeState;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.Feature;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.recipes.model.RecipeDeleteResVo;
 import com.cucumber_spring.demo.cucumber_spring_demo.features.recipes.model.RecipeDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.cucumber.java.DataTableType;
 import io.cucumber.java.DocStringType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -21,16 +19,12 @@ import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class RecipesFeature extends Feature {
-  private final AuthStateService authStateService;
   private final String addUrl;
-  private final ResponseCodeState responseCodeState;
   private RecipeDto recipeDto;
   private String recipeToGetId;
   private RecipeDeleteResVo recipeDeleteResVo;
@@ -42,26 +36,19 @@ public class RecipesFeature extends Feature {
       final ObjectMapper objectMapper,
       final AuthStateService authStateService,
       final ResponseCodeState responseCodeState) {
-    super(apiBaseUrl, apiRecipesContextPath, objectMapper, ContentType.JSON);
-    this.authStateService = authStateService;
+    super(
+        apiBaseUrl,
+        apiRecipesContextPath,
+        objectMapper,
+        ContentType.JSON,
+        authStateService,
+        responseCodeState);
     this.addUrl = addUrl;
-    this.responseCodeState = responseCodeState;
-  }
-
-  @DataTableType
-  public AuthUserDto authUserDto(final Map<String, String> userMetadata) {
-    return objectMapper.convertValue(userMetadata, AuthUserDto.class);
   }
 
   @DocStringType(contentType = "json")
   public RecipeDto recipeDto(final String recipeMetadata) throws JsonProcessingException {
     return objectMapper.readValue(recipeMetadata, RecipeDto.class);
-  }
-
-  @Given("Authorize a user with")
-  public void authorizeAUserWith(final AuthUserDto authUserDto) {
-    authStateService.createDataForAuth(authUserDto);
-    authStateService.makeARequestForJwt();
   }
 
   @Given("Create a new recipe with")
@@ -144,7 +131,8 @@ public class RecipesFeature extends Feature {
 
   @When("Make a delete request for recipe {int}")
   public void makeADeleteRequestForRecipe(final int id) {
-    final ExtractableResponse<Response> deleteRecipeResponse = RestAssured.given()
+    final ExtractableResponse<Response> deleteRecipeResponse =
+        RestAssured.given()
             .spec(this.requestSpecBuilder.build())
             .auth()
             .oauth2(authStateService.getUserJwt())
@@ -161,9 +149,9 @@ public class RecipesFeature extends Feature {
     log.info("Delete for a recipe response {}", this.recipeDeleteResVo);
   }
 
-    @And("Response isDeleted should be true for id {int}")
-    public void responseIsDeletedShouldBeTrue(final int id) {
-      assertTrue(this.recipeDeleteResVo.isDeleted());
-      assertEquals(id, this.recipeDeleteResVo.getId());
-    }
+  @And("Response isDeleted should be true for id {int}")
+  public void responseIsDeletedShouldBeTrue(final int id) {
+    assertTrue(this.recipeDeleteResVo.isDeleted());
+    assertEquals(id, this.recipeDeleteResVo.getId());
+  }
 }

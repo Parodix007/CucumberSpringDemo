@@ -24,8 +24,6 @@ public class AuthFeature extends Feature {
   private static final String PASSWORD_FIELD = "password";
   private static final String ID_FIELD = "id";
   private final String meUrl;
-  private final AuthStateService authService;
-  private final ResponseCodeState responseCodeState;
   private JsonNode userMetadata;
 
   public AuthFeature(
@@ -35,21 +33,25 @@ public class AuthFeature extends Feature {
       final ObjectMapper objectMapper,
       final AuthStateService authService,
       final ResponseCodeState responseCodeState) {
-    super(apiBaseUri, apiBaseContextPath, objectMapper, ContentType.JSON);
+    super(
+        apiBaseUri,
+        apiBaseContextPath,
+        objectMapper,
+        ContentType.JSON,
+        authService,
+        responseCodeState);
     this.meUrl = meUrl;
-    this.authService = authService;
-    this.responseCodeState = responseCodeState;
   }
 
   @Given("Create a user data using {string} and {string}")
   public void createAUserDataUsingAnd(final String username, final String password) {
-    authService.createDataForAuth(username, password);
+    authStateService.createDataForAuth(username, password);
   }
 
   @When("Make a request for JWT")
   public void makeARequestForJWT() {
-    authService.makeARequestForJwt();
-    responseCodeState.setResponseCode(authService.getStatusCode());
+    authStateService.makeARequestForJwt();
+    responseCodeState.setResponseCode(authStateService.getStatusCode());
   }
 
   @When("Make a request for user metadata")
@@ -58,7 +60,7 @@ public class AuthFeature extends Feature {
         RestAssured.given()
             .spec(this.requestSpecBuilder.build())
             .auth()
-            .oauth2(authService.getUserJwt())
+            .oauth2(authStateService.getUserJwt())
             .when()
             .get(meUrl)
             .then()
